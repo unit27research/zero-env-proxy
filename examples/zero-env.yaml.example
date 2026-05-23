@@ -1,0 +1,10 @@
+proxy:
+  host: "127.0.0.1"
+  port: 5050
+
+services:
+  mockai:
+    provider: "mock"
+    target_url: "mock://local"
+    allowed_files:
+      - "examples/allowed_agent.py"

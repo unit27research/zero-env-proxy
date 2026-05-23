@@ -1,0 +1,11 @@
+__pycache__/
+.pytest_cache/
+.venv/
+build/
+dist/
+*.egg-info/
+zero-env.yaml
+zero-env.lock
+.env
+.env.local
+*.log
