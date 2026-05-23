@@ -15,7 +15,15 @@ It is not a production security product. Its purpose is to show real building ab
 
 Allowed claim:
 
-> A proof-of-concept local credential proxy for automation scripts. It demonstrates how a worker can call an API through a governed local proxy without receiving the real provider credential directly.
+> Zero-Env Proxy is a small local credential proxy for automation scripts. It lets approved worker files call configured services through a governed localhost gateway, keeping provider credentials out of the worker script itself.
+
+Boundary language:
+
+> Most secret tooling focuses on storage, rotation, and access to the secret. Zero-Env Proxy focuses on local credential use: allowing an approved automation file to call a service without handing that file the provider credential.
+
+Secondary boundary:
+
+> Zero-Env Proxy is not an org-wide secrets vault. It focuses on the runtime boundary after a credential exists: keeping provider keys out of worker scripts while routing approved calls through a local policy gate.
 
 Blocked claims:
 
@@ -308,6 +316,7 @@ Phase B is releasable when:
 - no real secrets exist in the repo
 - same-basename spoof test fails correctly
 - tamper demo fails correctly
+- public-facing README and package metadata frame the project as a real small developer utility focused on runtime credential use, not as an org-wide vault or enterprise platform
 - public-facing README and package metadata avoid overclaiming phrases such as production security, enterprise-ready, prevents code injection, or eliminates all secrets, except when explicitly naming blocked claims
 
 Phase C is releasable when:
