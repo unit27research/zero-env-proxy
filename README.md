@@ -4,6 +4,18 @@ A small local credential proxy for automation scripts.
 
 Zero-Env Proxy lets approved worker files call configured services through a governed localhost gateway, keeping provider credentials out of the worker script itself.
 
+## Release Status
+
+`SOURCE_STATUS: PUBLIC_PACKAGE`
+`ACCESS_STATUS: CLEARED_FOR_EXTERNAL_USE`
+`UNIT27_POSITION: ADJACENT_RUNTIME_BOUNDARY_UTILITY`
+
+This repository is a released Unit27 public utility: visible, inspectable, and intended for orientation, testing, and practical use. Controlled protocol materials remain outside this source package.
+
+It answers one narrow question:
+
+> Can a local automation worker call a provider without receiving the provider credential directly?
+
 ## Why This Exists
 
 Most secret tooling focuses on storage, rotation, and access to the secret. Zero-Env Proxy focuses on local credential use: allowing an approved automation file to call a service without handing that file the provider credential.
@@ -56,9 +68,15 @@ Expected behavior:
 
 Zero-Env Proxy focuses on the runtime boundary after a credential exists: keeping provider keys out of worker scripts while routing approved calls through a local policy gate.
 
+## Where It Fits
+
+Zero-Env Proxy is not part of the Unit27 Field Kit Suite operating sequence. It sits beside that chain as an adjacent runtime-boundary utility for local automation work.
+
+Use it when the work already has a credential but the worker file should remain credential-blind.
+
 ## Status
 
-Zero-Env Proxy is a small public field kit for local automation credential boundaries. The default demo uses a mock provider so the repo can be cloned, tested, and reviewed without private keys.
+Zero-Env Proxy is a small public utility for local automation credential boundaries. The default demo uses a mock provider so the repo can be cloned, tested, and reviewed without private keys.
 
 ## Architecture
 
