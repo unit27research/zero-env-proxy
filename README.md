@@ -50,6 +50,10 @@ Expected behavior:
 
 Zero-Env Proxy focuses on the runtime boundary after a credential exists: keeping provider keys out of worker scripts while routing approved calls through a local policy gate.
 
+## Status
+
+Zero-Env Proxy is a small public field kit for local automation credential boundaries. The default demo uses a mock provider so the repo can be cloned, tested, and reviewed without private keys.
+
 ## Architecture
 
 ```text
@@ -99,4 +103,3 @@ python3 -m pytest -v
 ## Optional Real Provider Mode
 
 The public demo uses `mockai` by default and needs no API key. A real provider can be configured with `provider: "http"` and `api_key_env`, so only the proxy process receives the provider credential.
-

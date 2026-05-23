@@ -17,14 +17,23 @@ def extract_python_script_path(cmdline: list[str]) -> Path | None:
 
 
 def resolve_caller_from_client_port(client_port: int) -> Path:
-    for conn in psutil.net_connections(kind="inet"):
-        if not conn.raddr or conn.raddr.port != client_port or conn.pid is None:
-            continue
+    try:
+        processes = list(psutil.process_iter(["pid"]))
+    except psutil.AccessDenied as exc:
+        raise IdentityError("Could not inspect network connections for caller identity") from exc
+
+    for process in processes:
         try:
-            process = psutil.Process(conn.pid)
-            script_path = extract_python_script_path(process.cmdline())
+            connections = process.net_connections(kind="inet")
         except (psutil.AccessDenied, psutil.NoSuchProcess):
             continue
-        if script_path is not None:
-            return script_path
+        for conn in connections:
+            if not conn.laddr or conn.laddr.port != client_port:
+                continue
+            try:
+                script_path = extract_python_script_path(process.cmdline())
+            except (psutil.AccessDenied, psutil.NoSuchProcess):
+                continue
+            if script_path is not None:
+                return script_path
     raise IdentityError(f"Could not resolve caller for client port {client_port}")
