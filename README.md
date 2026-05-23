@@ -26,6 +26,12 @@ Most secret tooling focuses on storage, rotation, and access to the secret. Zero
 
 ```bash
 python3 -m pip install -e ".[dev]"
+zero-env demo
+```
+
+For the manual two-terminal route:
+
+```bash
 zero-env init
 zero-env enroll examples/allowed_agent.py
 zero-env serve
@@ -78,6 +84,15 @@ zero-env demo
 ## Demo Transcript
 
 ```text
+$ zero-env demo
+PASS allowed worker reached mock provider
+PASS blocked worker received 403
+PASS tampered worker received 403
+```
+
+Manual route:
+
+```text
 $ zero-env enroll examples/allowed_agent.py
 Enrolled examples/allowed_agent.py [short-hash]
 
@@ -85,13 +100,13 @@ $ python3 examples/allowed_agent.py
 {"provider":"mockai", ...}
 
 $ python3 examples/blocked_agent.py
-HTTP Error 403: Forbidden
+BLOCKED: 403 Caller not allowed for service: examples/blocked_agent.py
 
 $ python3 examples/tamper_demo.py
 Tampered examples/allowed_agent.py. Re-run it to see the proxy reject the changed hash.
 
 $ python3 examples/allowed_agent.py
-HTTP Error 403: Forbidden
+DENIED: 403 File hash mismatch for examples/allowed_agent.py
 ```
 
 ## Tests

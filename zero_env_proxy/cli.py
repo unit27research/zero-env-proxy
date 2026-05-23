@@ -3,10 +3,12 @@ from __future__ import annotations
 from argparse import ArgumentParser
 from pathlib import Path
 import sys
+import tempfile
 
+from fastapi.testclient import TestClient
 import uvicorn
 
-from zero_env_proxy.config import ConfigError, load_config
+from zero_env_proxy.config import ConfigError, ProxyConfig, ServiceConfig, ZeroEnvConfig, load_config
 from zero_env_proxy.gateway import create_app
 from zero_env_proxy.lockfile import LockError, enroll_file, load_lockfile
 
@@ -93,11 +95,67 @@ def cmd_inspect_lock(lock_path: str) -> int:
 
 
 def cmd_demo(python_bin: str) -> int:
-    print("Zero-Env demo uses two terminals in normal use.")
-    print("Run: zero-env init")
-    print("Run: zero-env enroll examples/allowed_agent.py")
-    print("Run: zero-env serve")
-    print("Then run the example agents against http://127.0.0.1:5050/mockai/v1/chat/completions")
+    _ = python_bin
+    with tempfile.TemporaryDirectory(prefix="zero-env-demo-") as demo_dir:
+        root = Path(demo_dir)
+        examples_dir = root / "examples"
+        examples_dir.mkdir()
+        allowed = examples_dir / "allowed_agent.py"
+        blocked = examples_dir / "blocked_agent.py"
+        allowed.write_text("print('allowed worker')\n", encoding="utf-8")
+        blocked.write_text("print('blocked worker')\n", encoding="utf-8")
+        lock_path = root / "zero-env.lock"
+        enroll_file(allowed, lock_path=lock_path, project_root=root)
+
+        config = ZeroEnvConfig(
+            proxy=ProxyConfig(host="127.0.0.1", port=5050),
+            services={
+                "mockai": ServiceConfig(
+                    provider="mock",
+                    target_url="mock://local",
+                    allowed_files=["examples/allowed_agent.py"],
+                )
+            },
+            root=root,
+        )
+
+        allowed_app = create_app(
+            config=config,
+            lock_path=lock_path,
+            caller_resolver=lambda _port: allowed,
+        )
+        allowed_response = TestClient(allowed_app).post(
+            "/mockai/v1/chat/completions",
+            json={"messages": []},
+        )
+        if allowed_response.status_code != 200:
+            print(f"FAIL allowed worker returned {allowed_response.status_code}")
+            return 1
+        print("PASS allowed worker reached mock provider")
+
+        blocked_app = create_app(
+            config=config,
+            lock_path=lock_path,
+            caller_resolver=lambda _port: blocked,
+        )
+        blocked_response = TestClient(blocked_app).post(
+            "/mockai/v1/chat/completions",
+            json={"messages": []},
+        )
+        if blocked_response.status_code != 403:
+            print(f"FAIL blocked worker returned {blocked_response.status_code}")
+            return 1
+        print("PASS blocked worker received 403")
+
+        allowed.write_text("print('tampered worker')\n", encoding="utf-8")
+        tampered_response = TestClient(allowed_app).post(
+            "/mockai/v1/chat/completions",
+            json={"messages": []},
+        )
+        if tampered_response.status_code != 403:
+            print(f"FAIL tampered worker returned {tampered_response.status_code}")
+            return 1
+        print("PASS tampered worker received 403")
     return 0
 
 
